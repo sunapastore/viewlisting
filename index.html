@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>फर्म दर्ता डाटा हेर्नुहोस्</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+            font-size: 28px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .header-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .search-box {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            flex: 1;
+        }
+        .search-box input {
+            padding: 8px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            flex: 1;
+            min-width: 200px;
+        }
+        .search-box button {
+            padding: 8px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+        .search-box button:hover {
+            background: #0056b3;
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .btn-refresh {
+            padding: 8px 20px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-refresh:hover {
+            background: #218838;
+        }
+        .btn-export {
+            padding: 8px 20px;
+            background: #17a2b8;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-export:hover {
+            background: #138496;
+        }
+        .btn-view-form {
+            padding: 8px 20px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-view-form:hover {
+            background: #5a6268;
+        }
+        .table-wrapper {
+            overflow-x: auto;
+            margin-top: 10px;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        table thead {
+            background: #007bff;
+            color: white;
+        }
+        table th {
+            padding: 12px 8px;
+            text-align: left;
+            white-space: nowrap;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: #007bff;
+            border-bottom: 2px solid #0056b3;
+        }
+        table td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #e9ecef;
+            vertical-align: top;
+            max-width: 300px;
+            word-wrap: break-word;
+        }
+        table tr:hover {
+            background: #f8f9fa;
+        }
+        table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        table tr:nth-child(even):hover {
+            background: #e9ecef;
+        }
+        .file-link {
+            color: #007bff;
+            text-decoration: none;
+            display: inline-block;
+            margin: 2px 0;
+            word-break: break-all;
+            font-size: 12px;
+        }
+        .file-link:hover {
+            text-decoration: underline;
+        }
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            font-size: 16px;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+        @keyframes dots {
+            0% { content: ''; }
+            25% { content: '.'; }
+            50% { content: '..'; }
+            75% { content: '...'; }
+            100% { content: ''; }
+        }
+        .status-message {
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        .status-message.show {
+            display: block;
+        }
+        .status-message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status-message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status-message.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .data-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            color: #666;
+            font-size: 14px;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        .data-info .count {
+            font-weight: bold;
+            color: #333;
+        }
+        .data-info .last-updated {
+            color: #999;
+            font-size: 12px;
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            table {
+                font-size: 12px;
+            }
+            table th, table td {
+                padding: 6px 4px;
+                min-width: 80px;
+            }
+            .search-box {
+                flex-direction: column;
+                width: 100%;
+            }
+            .search-box input {
+                min-width: unset;
+                width: 100%;
+            }
+            .header-actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .search-box button, .btn-refresh, .btn-export, .btn-view-form {
+                width: 100%;
+            }
+            .btn-group {
+                flex-direction: column;
+                width: 100%;
+            }
+            .btn-group a, .btn-group button {
+                width: 100%;
+                text-align: center;
+            }
+            .data-info {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+        @media print {
+            .header-actions, .search-box, .btn-group, .no-print {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📋 फर्म/संस्था दर्ता डाटा</h1>
+        <p class="subtitle">सबै फारम सबमिशनहरूको विवरण</p>
+        
+        <div id="statusMessage" class="status-message"></div>
+        
+        <div class="header-actions no-print">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="🔍 खोज्नुहोस्... (फर्म, नम्बर, ठेगाना, नाम)">
+                <button onclick="searchData()">खोजी गर्नुहोस्</button>
+                <button onclick="clearSearch()">स्पष्ट पार्नुहोस्</button>
+            </div>
+            <div class="btn-group">
+                <button class="btn-refresh" onclick="loadData()">🔄 रिफ्रेस</button>
+                <button class="btn-export" onclick="exportToCSV()">📥 CSV डाउनलोड</button>
+                <a href="YOUR_FORM_URL_HERE" class="btn-view-form" target="_blank">➕ नयाँ फारम</a>
+            </div>
+        </div>
+        
+        <div class="data-info" id="dataInfo">
+            <span>📊 कुल रेकर्ड: <span class="count" id="totalCount">०</span></span>
+            <span class="last-updated" id="lastUpdated">अन्तिम अपडेट: -</span>
+        </div>
+        
+        <div class="table-wrapper">
+            <table id="dataTable">
+                <thead>
+                    <tr id="tableHeader">
+                        <!-- Headers will be dynamically generated -->
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr>
+                        <td colspan="20" class="loading">डाटा लोड हुँदैछ</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // IMPORTANT: Replace with your Apps Script URL
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxqmWO4QBNvuyPsxUFvugysx_uzltZIRl3UXvF0QyvUmO1H0ttSSBjWw1UoqV6pNpf1/exec";
+        
+        // Replace with your form URL
+        const FORM_URL = "YOUR_FORM_URL_HERE";
+        
+        let allData = [];
+        let headers = [];
+        let searchTerm = '';
+
+        // Function to load data from Google Sheets
+        async function loadData() {
+            showStatus('🔄 डाटा लोड हुँदैछ...', 'info');
+            document.getElementById('tableBody').innerHTML = '<tr><td colspan="20" class="loading">डाटा लोड हुँदैछ</td></tr>';
+            
+            try {
+                const response = await fetch(SCRIPT_URL + '?action=getData', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Network response was not ok: ' + response.status);
+                }
+                
+                const result = await response.json();
+                console.log('Received data:', result);
+                
+                if (result.status === 'success') {
+                    allData = result.data || [];
+                    headers = result.headers || [];
+                    
+                    if (allData.length === 0) {
+                        document.getElementById('tableBody').innerHTML = '<tr><td colspan="20" class="no-data">📭 कुनै डाटा छैन। कृपया पहिले फारम भर्नुहोस्।</td></tr>';
+                        document.getElementById('totalCount').textContent = '०';
+                        showStatus('📭 कुनै डाटा फेला परेन', 'info');
+                    } else {
+                        renderTable(allData);
+                        document.getElementById('totalCount').textContent = allData.length;
+                        showStatus(`✅ ${allData.length} वटा रेकर्ड फेला पर्यो`, 'success');
+                    }
+                    
+                    // Update last updated time
+                    const now = new Date();
+                    document.getElementById('lastUpdated').textContent = `अन्तिम अपडेट: ${now.toLocaleString('ne-NP')}`;
+                    
+                } else {
+                    throw new Error(result.message || 'डाटा लोड गर्न सकिएन');
+                }
+            } catch (error) {
+                console.error('Error loading data:', error);
+                document.getElementById('tableBody').innerHTML = `<tr><td colspan="20" class="no-data">❌ त्रुटि: ${error.message}</td></tr>`;
+                showStatus('❌ डाटा लोड गर्न असफल: ' + error.message, 'error');
+            }
+        }
+
+        // Function to render table
+        function renderTable(data) {
+            const tbody = document.getElementById('tableBody');
+            const thead = document.getElementById('tableHeader');
+            
+            // Render headers
+            thead.innerHTML = headers.map(h => `<th>${h}</th>`).join('');
+            
+            // Render rows
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="20" class="no-data">📭 कुनै डाटा छैन</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = data.map(row => {
+                return '<tr>' + row.map(cell => {
+                    // Check if cell is empty
+                    if (cell === null || cell === undefined || cell === '') {
+                        return '<td>-</td>';
+                    }
+                    
+                    // Check if cell contains a URL (file links)
+                    if (typeof cell === 'string' && (cell.startsWith('http') || cell.includes('drive.google.com'))) {
+                        return `<td><a href="${cell}" target="_blank" class="file-link">📎 फाइल हेर्नुहोस्</a></td>`;
+                    }
+                    
+                    // Check if it's a date
+                    if (typeof cell === 'string' && !isNaN(Date.parse(cell)) && cell.includes('T')) {
+                        try {
+                            const date = new Date(cell);
+                            return `<td>${date.toLocaleDateString('ne-NP')} ${date.toLocaleTimeString('ne-NP', {hour: '2-digit', minute: '2-digit'})}</td>`;
+                        } catch {
+                            return `<td>${cell}</td>`;
+                        }
+                    }
+                    
+                    // If the text is long, truncate with tooltip
+                    if (typeof cell === 'string' && cell.length > 100) {
+                        return `<td title="${cell.replace(/"/g, '&quot;')}">${cell.substring(0, 100)}...</td>`;
+                    }
+                    
+                    return `<td>${cell}</td>`;
+                }).join('') + '</tr>';
+            }).join('');
+        }
+
+        // Search functionality
+        function searchData() {
+            searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            
+            if (!searchTerm) {
+                renderTable(allData);
+                document.getElementById('totalCount').textContent = allData.length;
+                showStatus(`✅ ${allData.length} वटा रेकर्ड फेला पर्यो`, 'success');
+                return;
+            }
+            
+            const filtered = allData.filter(row => {
+                return row.some(cell => {
+                    if (cell === null || cell === undefined) return false;
+                    return String(cell).toLowerCase().includes(searchTerm);
+                });
+            });
+            
+            if (filtered.length === 0) {
+                document.getElementById('tableBody').innerHTML = `<tr><td colspan="${headers.length}" class="no-data">🔍 "${searchTerm}" खोजीमा कुनै डाटा फेला परेन</td></tr>`;
+                document.getElementById('totalCount').textContent = '०';
+                showStatus(`🔍 "${searchTerm}" खोजीमा कुनै डाटा फेला परेन`, 'info');
+            } else {
+                renderTable(filtered);
+                document.getElementById('totalCount').textContent = filtered.length;
+                showStatus(`✅ "${searchTerm}" खोजीमा ${filtered.length} वटा रेकर्ड फेला पर्यो (कुल: ${allData.length})`, 'success');
+            }
+        }
+
+        // Clear search
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            searchTerm = '';
+            renderTable(allData);
+            document.getElementById('totalCount').textContent = allData.length;
+            showStatus(`✅ ${allData.length} वटा रेकर्ड फेला पर्यो`, 'success');
+        }
+
+        // Show status message
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.textContent = message;
+            statusDiv.className = `status-message show ${type}`;
+            
+            // Auto hide after 5 seconds for success/info
+            if (type === 'success' || type === 'info') {
+                clearTimeout(window.statusTimeout);
+                window.statusTimeout = setTimeout(() => {
+                    statusDiv.className = 'status-message';
+                }, 5000);
+            }
+        }
+
+        // Export to CSV
+        function exportToCSV() {
+            if (allData.length === 0) {
+                showStatus('📭 एक्सपोर्ट गर्न कुनै डाटा छैन', 'error');
+                return;
+            }
+            
+            // Prepare CSV content
+            let csvContent = headers.join(',') + '\n';
+            allData.forEach(row => {
+                const escapedRow = row.map(cell => {
+                    if (cell === null || cell === undefined) return '';
+                    const str = String(cell);
+                    // Handle special characters
+                    if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+                        return '"' + str.replace(/"/g, '""') + '"';
+                    }
+                    return str;
+                });
+                csvContent += escapedRow.join(',') + '\n';
+            });
+            
+            // Download CSV with BOM for Excel
+            const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `firm_darta_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            showStatus(`✅ CSV फाइल डाउनलोड भयो (${allData.length} रेकर्डहरू)`, 'success');
+        }
+
+        // Enter key search
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set form URL
+            const formLink = document.querySelector('.btn-view-form');
+            if (formLink) {
+                formLink.href = FORM_URL;
+            }
+            
+            document.getElementById('searchInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    searchData();
+                }
+            });
+            
+            // Load data on page load
+            loadData();
+            
+            // Auto refresh every 60 seconds
+            setInterval(loadData, 60000);
+        });
+    </script>
+</body>
+</html>
